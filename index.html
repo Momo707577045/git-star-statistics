@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="keywords" content="git-star 统计工具">
+  <meta name="description" content="git-star 统计工具, Momo's Blog, LuckyMomo">
+  <title>git-star 统计</title>
+  <style>
+    /*全局设置*/
+    body::-webkit-scrollbar {
+      display: none
+    }
+
+    p {
+      margin: 0;
+    }
+
+    [v-cloak] {
+      display: none;
+    }
+
+    body {
+      text-align: center;
+    }
+
+    #app {
+      display: inline-block;
+      padding: 10px 50px 30px;
+      max-width: 1000px;
+      text-align: center;
+      overflow: scroll;
+    }
+
+    #app::-webkit-scrollbar {
+      width: 0;
+    }
+
+    .m-p-action {
+      margin: 20px auto;
+      max-width: 1100px;
+      width: 100%;
+      font-size: 35px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .m-p-input-container {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .m-p-input {
+      display: inline-block;
+      padding: 16px;
+      width: 400px;
+      color: #444444;
+      font-size: 24px;
+      border-radius: 4px;
+      box-shadow: none;
+      text-align: right;
+      border: 1px solid #cccccc;
+    }
+
+    .m-btn {
+      position: relative;
+      display: inline-block;
+      margin-left: 10px;
+      padding: 0 30px;
+      height: 60px;
+      line-height: 60px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #eeeeee;
+      background-color: #2ecc71;
+      opacity: 1;
+      transition: 0.3s all;
+    }
+
+    .unit {
+      opacity: 0.4;
+    }
+
+    .active {
+      opacity: 1 !important;
+    }
+
+    .m-btn:hover {
+      opacity: 0.9;
+    }
+
+    .parse-result {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .parse-result .m-btn {
+      display: block;
+      margin-left: 0;
+      margin-bottom: 10px;
+      background-color: #2980b9;
+    }
+
+    .without-thousand {
+      margin-left: 0;
+      margin-bottom: 10px;
+      width: 100%;
+      opacity: 0.4;
+      box-sizing: border-box;
+    }
+
+    .row {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .row input,
+    .row div {
+      display: inline-block;
+      width: 49%;
+      margin-left: 0;
+      margin-right: 0;
+      box-sizing: border-box;
+    }
+
+    .bottom-tool {
+      position: fixed;
+      right: 54px;
+      bottom: 50px;
+      z-index: 999;
+      width: 130px;
+      text-align: right;
+      display: inline-block;
+    }
+
+    .bottom-tool-item {
+      display: inline-block;
+      margin: 4px 0;
+      background-color: #eff3f6;
+      background-image: linear-gradient(-180deg, #fafbfc, #eff3f6 90%);
+      color: #24292e;
+      border: 1px solid rgba(27, 31, 35, .2);
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      padding: 6px 12px;
+    }
+
+    .bottom-tool-item:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+  <section id="app">
+    <!--顶部操作提示-->
+    <section class="m-p-action g-box">{{tips}}</section>
+
+    <!--右下角外链工具栏-->
+    <div class="bottom-tool">
+      <a class="bottom-tool-item" target="_blank" href="https://github.com/Momo707577045/time-parser">github</a>
+      <a class="bottom-tool-item" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
+    </div>
+
+    <section class="m-p-input-container">
+      <input class="m-p-input" type="text" v-model="account" placeholder="请统计账号">
+      <div class="m-btn unit" @click="getGitStatus">统计</div>
+      </div>
+    </section>
+
+    <table>
+      <thead>
+        <tr>
+          <th>项目名</th>
+          <th>star</th>
+          <th>{{ preDateStr }}</th>
+          <th>变化</th>
+          <th>fork</th>
+          <th>{{ preDateStr }}</th>
+          <th>变化</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr v-for="item in gitItemList">
+          <td>
+            <a v-if="item.html_url" :href="item.html_url" target="_blank">{{item.name}}</a>
+            <template v-else>{{item.name}}</template>
+          </td>
+          <td>{{ item.stargazers_count }}</td>
+          <td>{{ item.pre_stargazers_count }}</td>
+          <td>{{ item.stargazers_count - item.pre_stargazers_count || '-' }}</td>
+          <td>{{ item.forks_count }}</td>
+          <td>{{ item.pre_forks_count }}</td>
+          <td>{{ item.forks_count - item.pre_forks_count || '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</body>
+<!-- <script>
+var _hmt = _hmt || [];
+(function () {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script> -->
+<!--vue 前端框架-->
+<script src="./vue.global.min.js"></script>
+
+<script setup>
+  const { reactive, ref, watch } = Vue
+  Vue.createApp({
+    setup() {
+      let currentURL = new URL(location.href)
+      const tips = ref('时间转换器，点击复制各个值') // 顶部提示
+      const gitItemList = ref([]) // git 項目信息
+      const account = ref(currentURL.searchParams.get('account') || '') // 需要统计的 git 账号名
+      let preDateStr = ref('历史') // 上一次統計的時間
+
+      // 对比历史数据
+      function getHistoryData(todayDataList) {
+        let date = new Date()
+        let todayStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+        const dataHistoryList = JSON.parse(localStorage.getItem(`dataHistoryList-${account.value}`) || '[]') // 数据历史，只保存今天和昨天的数据
+        const projectData = {} // 项目信息，从数组转化为对象
+        todayDataList.forEach(element => projectData[element.name] = element)
+
+        let preData = {}
+        if (dataHistoryList[0]?.date !== todayStr) { // 今日数据未存储，添加进入数据，删除前天数据
+          preDateStr.value = dataHistoryList[0]?.date || preDateStr.value
+          preData = dataHistoryList[0]?.data || {}
+
+          dataHistoryList.unshift({
+            date: todayStr,
+            data: projectData
+          })
+          dataHistoryList.length = Math.min(dataHistoryList.length, 2) // 只保留今天和昨天数据
+        } else { // 已存储今日数据，更新今日数据
+          preDateStr.value = dataHistoryList[1]?.date || preDateStr.value
+          preData = dataHistoryList[1]?.data || {}
+
+          dataHistoryList[0] = {
+            date: todayStr,
+            data: projectData
+          }
+        }
+
+        todayDataList.forEach(element => {
+          element.pre_forks_count = preData[element.name]?.forks_count ?? element.forks_count
+          element.pre_stargazers_count = preData[element.name]?.stargazers_count ?? element.stargazers_count
+        });
+
+        localStorage.setItem(`dataHistoryList-${account.value}`, JSON.stringify(dataHistoryList))
+
+        return todayDataList
+      }
+
+      // 获取 git 统计信息
+      function getGitStatus() {
+        fetch(`https://api.github.com/users/${account.value}/repos?page=1&per_page=100`, { method: 'GET' })
+          .then(res => res.json())
+          .then(todayData => { // 解析后的参数
+            let sumItem = {
+              name: '合计',
+              forks_count: 0,
+              stargazers_count: 0,
+            } // 合计后数据
+
+            todayData.sort((n1, n2) => n2.stargazers_count > n1.stargazers_count ? 1 : -1)
+            todayData.forEach(element => {
+              sumItem.forks_count += element.forks_count
+              sumItem.stargazers_count += element.stargazers_count
+            });
+            gitItemList.value = getHistoryData([sumItem, ...todayData])
+            console.log(gitItemList.value)
+          })
+      }
+
+      account.value && getGitStatus()
+
+      return {
+        tips,
+        account,
+        preDateStr,
+        gitItemList,
+      }
+    }
+  }).mount('#app')
+</script>
+
+</html>

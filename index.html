@@ -3,8 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <meta name="keywords" content="git-star 统计工具">
   <meta name="description" content="git-star 统计工具, Momo's Blog, LuckyMomo">
@@ -23,13 +22,21 @@
       display: none;
     }
 
-    body {
+    [v-cloak] {
+      display: none;
+    }
+
+    html,
+    body,
+    #app {
+      margin: 0;
+      min-height: 100%;
       text-align: center;
     }
 
     #app {
       display: inline-block;
-      padding: 10px 50px 30px;
+      padding: 10px 0 30px;
       max-width: 1000px;
       text-align: center;
       overflow: scroll;
@@ -54,22 +61,34 @@
     }
 
     .m-p-input {
+      outline: none;
       display: inline-block;
       padding: 16px;
-      width: 400px;
+      width: 600px;
+      height: 60px;
       color: #444444;
       font-size: 24px;
+
       border-radius: 4px;
       box-shadow: none;
       text-align: right;
+      box-sizing: border-box;
       border: 1px solid #cccccc;
+      /*常用于IOS下移除原生样式*/
+      -webkit-appearance: none;
+      /*点击高亮的颜色*/
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+
+    .m-p-input-mobile {
+      width: 400px !important;
     }
 
     .m-btn {
       position: relative;
       display: inline-block;
       margin-left: 10px;
-      padding: 0 30px;
+      width: 160px;
       height: 60px;
       line-height: 60px;
       font-size: 24px;
@@ -82,10 +101,6 @@
       transition: 0.3s all;
     }
 
-    .unit {
-      opacity: 0.4;
-    }
-
     .active {
       opacity: 1 !important;
     }
@@ -94,31 +109,26 @@
       opacity: 0.9;
     }
 
-    .parse-result {
-      margin-top: 30px;
-      text-align: center;
-    }
-
-    .parse-result .m-btn {
-      display: block;
-      margin-left: 0;
-      margin-bottom: 10px;
-      background-color: #2980b9;
-    }
-
-    .without-thousand {
-      margin-left: 0;
-      margin-bottom: 10px;
+    table {
+      margin-top: 20px;
+      padding: 10px 20px;
       width: 100%;
-      opacity: 0.4;
+      border: solid 1px #e2e2e2;
+    }
+
+    .table-mobile {
+      font-size: 20px;
+    }
+
+    th,
+    td {
+      padding: 10px 0;
+      min-width: 0;
       box-sizing: border-box;
-    }
-
-    .row {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+      position: relative;
+      border-bottom: 1px solid #ebeef5;
     }
 
     .row input,
@@ -162,23 +172,28 @@
 </head>
 
 <body>
-  <section id="app">
+  <section id="app" v-cloak>
+
+    <meta name="viewport"
+      :content="`maximum-scale=1,minimum-scale=0.4,width=device-width,initial-scale=${ isMobileScale }`" />
+
     <!--顶部操作提示-->
     <section class="m-p-action g-box">{{tips}}</section>
 
     <!--右下角外链工具栏-->
-    <div class="bottom-tool">
-      <a class="bottom-tool-item" target="_blank" href="https://github.com/Momo707577045/time-parser">github</a>
+    <div class="bottom-tool" v-if="!isMobile">
+      <a class="bottom-tool-item" target="_blank" href="https://github.com/Momo707577045/git-star-statistics">github</a>
       <a class="bottom-tool-item" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
     </div>
 
     <section class="m-p-input-container">
-      <input class="m-p-input" type="text" v-model="account" placeholder="请统计账号">
-      <div class="m-btn unit" @click="getGitStatus">统计</div>
+      <input class="m-p-input" :class="[ isMobile ? 'm-p-input-mobile' : '']" type="text" v-model="account"
+        placeholder="请统计账号">
+      <div class="m-btn" @click="getGitStatus" @touch="getGitStatus">统 计</div>
       </div>
     </section>
 
-    <table>
+    <table :class="[ isMobile ? 'table-mobile' : '']">
       <thead>
         <tr>
           <th>项目名</th>
@@ -188,6 +203,7 @@
           <th>fork</th>
           <th>{{ preDateStr }}</th>
           <th>变化</th>
+          <th v-if="!isMobile">历史趋势</th>
         </tr>
       </thead>
 
@@ -203,29 +219,36 @@
           <td>{{ item.forks_count }}</td>
           <td>{{ item.pre_forks_count }}</td>
           <td>{{ item.forks_count - item.pre_forks_count || '-' }}</td>
+          <td v-if="!isMobile">
+            <a v-if="item.html_url" :href="`https://star-history.com/#${account}/${item.name}&Date`"
+              target="_blank">点击跳转
+            </a>
+          </td>
         </tr>
       </tbody>
     </table>
   </section>
 </body>
-<!-- <script>
-var _hmt = _hmt || [];
-(function () {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
-  var s = document.getElementsByTagName("script")[0];
-  s.parentNode.insertBefore(hm, s);
-})();
-</script> -->
+<script>
+  var _hmt = _hmt || [];
+  (function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
 <!--vue 前端框架-->
-<script src="./vue.global.min.js"></script>
+<script src="//upyun.luckly-mjw.cn/lib/vue3.global.min.js"></script>
 
 <script setup>
   const { reactive, ref, watch } = Vue
   Vue.createApp({
     setup() {
       let currentURL = new URL(location.href)
-      const tips = ref('时间转换器，点击复制各个值') // 顶部提示
+      const tips = ref('Git Star 统计') // 顶部提示
+      const isMobile = ref(false) // 是否移动端打开
+      const isMobileScale = ref((window.screen.width / 560).toFixed(2)) // 移动端打开时缩放
       const gitItemList = ref([]) // git 項目信息
       const account = ref(currentURL.searchParams.get('account') || '') // 需要统计的 git 账号名
       let preDateStr = ref('历史') // 上一次統計的時間
@@ -233,7 +256,7 @@ var _hmt = _hmt || [];
       // 对比历史数据
       function getHistoryData(todayDataList) {
         let date = new Date()
-        let todayStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+        let todayStr = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
         const dataHistoryList = JSON.parse(localStorage.getItem(`dataHistoryList-${account.value}`) || '[]') // 数据历史，只保存今天和昨天的数据
         const projectData = {} // 项目信息，从数组转化为对象
         todayDataList.forEach(element => projectData[element.name] = element)
@@ -270,15 +293,26 @@ var _hmt = _hmt || [];
 
       // 获取 git 统计信息
       function getGitStatus() {
+        if (!account.value.trim()) {
+          alert('请输入统计账号')
+          return
+        }
+        tips.value = '数据统计中，请稍后'
         fetch(`https://api.github.com/users/${account.value}/repos?page=1&per_page=100`, { method: 'GET' })
-          .then(res => res.json())
+          .then(res => {
+            if (res.status === 404) {
+              alert('账号不存在，请重新检查')
+              throw new Error('账号不存在，请重新检查')
+            }
+            return res.json()
+          })
           .then(todayData => { // 解析后的参数
             let sumItem = {
               name: '合计',
               forks_count: 0,
               stargazers_count: 0,
             } // 合计后数据
-
+            tips.value = 'Git Star 统计'
             todayData.sort((n1, n2) => n2.stargazers_count > n1.stargazers_count ? 1 : -1)
             todayData.forEach(element => {
               sumItem.forks_count += element.forks_count
@@ -289,13 +323,30 @@ var _hmt = _hmt || [];
           })
       }
 
+      function setMobile() {
+        // 设置缩放
+        let $document = window.document;
+        let $userAgent = window.navigator.userAgent;
+
+        // PC平台
+        let isPC = /\b(Windows\sNT|Macintosh|Linux)\b/.test($userAgent) &&
+          !/mobile|android/i.test($userAgent) &&
+          !/[?&]pcEmbed(&|$)/.test(window.location.search);
+
+        isMobile.value = !isPC
+      }
+
+      setMobile()
       account.value && getGitStatus()
 
       return {
         tips,
         account,
+        isMobile,
+        isMobileScale,
         preDateStr,
         gitItemList,
+        getGitStatus,
       }
     }
   }).mount('#app')

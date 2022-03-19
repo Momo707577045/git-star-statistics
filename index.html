@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <meta name="keywords" content="git-star 统计工具">
   <meta name="description" content="git-star 统计工具, Momo's Blog, LuckyMomo">
-  <title>git-star 统计</title>
+  <title>Git Star 统计</title>
   <style>
     /*全局设置*/
     body::-webkit-scrollbar {
@@ -250,7 +250,7 @@
       const isMobile = ref(false) // 是否移动端打开
       const isMobileScale = ref((window.screen.width / 560).toFixed(2)) // 移动端打开时缩放
       const gitItemList = ref([]) // git 項目信息
-      const account = ref(currentURL.searchParams.get('account') || '') // 需要统计的 git 账号名
+      const account = ref(currentURL.searchParams.get('account') || localStorage.getItem('account')|| '') // 需要统计的 git 账号名
       let preDateStr = ref('历史') // 上一次統計的時間
 
       // 对比历史数据
@@ -293,10 +293,12 @@
 
       // 获取 git 统计信息
       function getGitStatus() {
+        window.history.replaceState(null, '', `${location.href.split('?')[0]}?account=${account.value}`)
         if (!account.value.trim()) {
           alert('请输入统计账号')
           return
         }
+        localStorage.setItem('account',account.value)
         tips.value = '数据统计中，请稍后'
         fetch(`https://api.github.com/users/${account.value}/repos?page=1&per_page=100`, { method: 'GET' })
           .then(res => {

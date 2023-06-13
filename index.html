@@ -5,8 +5,9 @@
   <meta charset="UTF-8">
 
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <meta name="keywords" content="git-star 统计工具">
-  <meta name="description" content="git-star 统计工具, Momo's Blog, LuckyMomo">
+  <meta name="author" content="毛静文,Momo">
+  <meta name="keywords" content="Git Star 统计工具,毛静文的博客,Momo's Blog">
+  <meta name="description" content="Git Star 统计工具, 毛静文的博客,Momo's Blog,Git Star 统计工具，一键查询账户 star 信息，自动在 URL 中获取并携带账号名，无需二次输入账号信息">
   <title>Git Star 统计</title>
   <style>
     /*全局设置*/
@@ -172,6 +173,17 @@
 </head>
 
 <body>
+  <div id="loading">
+    页面加载中，请耐心等待...
+    <h1 style="white-space: pre;">
+      推荐一个 Git Star 统计工具，
+      Git Star 统计工具，一键查询账户 star 信息，自动在 URL 中获取并携带账号名，无需二次输入账号信息
+      工具链接：https://blog.luckly-mjw.cn/tool-show/git-star-statistics/index.html
+      <img src="https://upyun.luckly-mjw.cn/Assets/blog/git-star-statistics-121-75.png" alt="Git Star 统计工具" title="logo"/>
+      <a target="_blank" href="https://blog.luckly-mjw.cn/tool-show/git-star-statistics/index.html">点击跳转</a>
+    </h1>
+  </div>
+
   <section id="app" v-cloak>
 
     <meta name="viewport"
@@ -197,11 +209,11 @@
       <thead>
         <tr>
           <th>项目名</th>
+          <th>{{ preDateStr }}</th>
           <th>star</th>
-          <th>{{ preDateStr }}</th>
           <th>变化</th>
-          <th>fork</th>
           <th>{{ preDateStr }}</th>
+          <th>fork</th>
           <th>变化</th>
           <th v-if="!isMobile">历史趋势</th>
         </tr>
@@ -213,11 +225,11 @@
             <a v-if="item.html_url" :href="item.html_url" target="_blank">{{item.name}}</a>
             <template v-else>{{item.name}}</template>
           </td>
-          <td>{{ item.stargazers_count }}</td>
           <td>{{ item.pre_stargazers_count }}</td>
+          <td>{{ item.stargazers_count }}</td>
           <td>{{ item.stargazers_count - item.pre_stargazers_count || '-' }}</td>
-          <td>{{ item.forks_count }}</td>
           <td>{{ item.pre_forks_count }}</td>
+          <td>{{ item.forks_count }}</td>
           <td>{{ item.forks_count - item.pre_forks_count || '-' }}</td>
           <td v-if="!isMobile">
             <a v-if="item.html_url" :href="`https://star-history.com/#${account}/${item.name}&Date`"
@@ -242,6 +254,7 @@
 <script src="//upyun.luckly-mjw.cn/lib/vue3.global.min.js"></script>
 
 <script setup>
+  document.getElementById('loading') && document.getElementById('loading').remove()
   const { reactive, ref, watch } = Vue
   Vue.createApp({
     setup() {
@@ -310,7 +323,7 @@
           })
           .then(todayData => { // 解析后的参数
             let sumItem = {
-              name: '合计',
+              name: `合计(${todayData.length})`,
               forks_count: 0,
               stargazers_count: 0,
             } // 合计后数据

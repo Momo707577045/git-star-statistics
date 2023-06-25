@@ -7,7 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <meta name="author" content="毛静文,Momo">
   <meta name="keywords" content="Git Star 统计工具,毛静文的博客,Momo's Blog">
-  <meta name="description" content="Git Star 统计工具, 毛静文的博客,Momo's Blog,Git Star 统计工具，一键查询账户 star 信息，自动在 URL 中获取并携带账号名，无需二次输入账号信息">
+  <meta name="description"
+    content="Git Star 统计工具, 毛静文的博客,Momo's Blog,Git Star 统计工具，一键查询账户 star 信息，自动在 URL 中获取并携带账号名，无需二次输入账号信息">
   <title>Git Star 统计</title>
   <style>
     /*全局设置*/
@@ -179,7 +180,8 @@
       推荐一个 Git Star 统计工具，
       Git Star 统计工具，一键查询账户 star 信息，自动在 URL 中获取并携带账号名，无需二次输入账号信息
       工具链接：https://blog.luckly-mjw.cn/tool-show/git-star-statistics/index.html
-      <img src="https://upyun.luckly-mjw.cn/Assets/blog/git-star-statistics-121-75.png" alt="Git Star 统计工具" title="logo"/>
+      <img src="https://upyun.luckly-mjw.cn/Assets/blog/git-star-statistics-121-75.png" alt="Git Star 统计工具"
+        title="logo" />
       <a target="_blank" href="https://blog.luckly-mjw.cn/tool-show/git-star-statistics/index.html">点击跳转</a>
     </h1>
   </div>
@@ -227,10 +229,10 @@
           </td>
           <td>{{ item.pre_stargazers_count }}</td>
           <td>{{ item.stargazers_count }}</td>
-          <td>{{ item.stargazers_count - item.pre_stargazers_count || '-' }}</td>
+          <td>{{ item.stargazers_count_change }}</td>
           <td>{{ item.pre_forks_count }}</td>
           <td>{{ item.forks_count }}</td>
-          <td>{{ item.forks_count - item.pre_forks_count || '-' }}</td>
+          <td>{{ item.forks_count_change }}</td>
           <td v-if="!isMobile">
             <a v-if="item.html_url" :href="`https://star-history.com/#${account}/${item.name}&Date`"
               target="_blank">点击跳转
@@ -263,16 +265,20 @@
       const isMobile = ref(false) // 是否移动端打开
       const isMobileScale = ref((window.screen.width / 560).toFixed(2)) // 移动端打开时缩放
       const gitItemList = ref([]) // git 項目信息
-      const account = ref(currentURL.searchParams.get('account') || localStorage.getItem('account')|| '') // 需要统计的 git 账号名
+      const account = ref(currentURL.searchParams.get('account') || localStorage.getItem('account') || '') // 需要统计的 git 账号名
       let preDateStr = ref('历史') // 上一次統計的時間
 
       // 对比历史数据
       function getHistoryData(todayDataList) {
         let date = new Date()
-        let todayStr = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+        let todayStr = `${date.getMonth() + 1}/${date.getDate()}`
         const dataHistoryList = JSON.parse(localStorage.getItem(`dataHistoryList-${account.value}`) || '[]') // 数据历史，只保存今天和昨天的数据
         const projectData = {} // 项目信息，从数组转化为对象
         todayDataList.forEach(element => projectData[element.name] = element)
+        let daySpace = new Date(dataHistoryList[0]?.date).getTime() - new Date(todayStr).getTime()
+        if (daySpace) {
+          daySpace = daySpace / 1000 * 60 * 60 * 24
+        }
 
         let preData = {}
         if (dataHistoryList[0]?.date !== todayStr) { // 今日数据未存储，添加进入数据，删除前天数据
@@ -296,8 +302,19 @@
 
         todayDataList.forEach(element => {
           element.pre_forks_count = preData[element.name]?.forks_count ?? element.forks_count
+          element.forks_count_change = element.forks_count - element.pre_forks_count || '-'
           element.pre_stargazers_count = preData[element.name]?.stargazers_count ?? element.stargazers_count
+          element.stargazers_count_change = element.stargazers_count - element.pre_stargazers_count || '-'
         });
+
+        const sumItem = todayDataList[0]
+        if (sumItem.forks_count_change !== '-') {
+          sumItem.forks_count_change += `/${(sumItem.forks_count_change / daySpace).toFixed(2)}`;
+        }
+        if (sumItem.stargazers_count_change !== '-') {
+          sumItem.stargazers_count_change += `/${(sumItem.stargazers_count_change / daySpace).toFixed(2)}`;
+        }
+
 
         localStorage.setItem(`dataHistoryList-${account.value}`, JSON.stringify(dataHistoryList))
 
@@ -311,7 +328,7 @@
           alert('请输入统计账号')
           return
         }
-        localStorage.setItem('account',account.value)
+        localStorage.setItem('account', account.value)
         tips.value = '数据统计中，请稍后'
         fetch(`https://api.github.com/users/${account.value}/repos?page=1&per_page=100`, { method: 'GET' })
           .then(res => {
@@ -323,7 +340,7 @@
           })
           .then(todayData => { // 解析后的参数
             let sumItem = {
-              name: `合计(${todayData.length})`,
+              name: `合计`,
               forks_count: 0,
               stargazers_count: 0,
             } // 合计后数据
@@ -333,7 +350,9 @@
               sumItem.forks_count += element.forks_count
               sumItem.stargazers_count += element.stargazers_count
             });
-            gitItemList.value = getHistoryData([sumItem, ...todayData])
+            // 平均每个项目多少 star，多少 fork
+            sumItem.name = `合计(${todayData.length}/${(sumItem.stargazers_count / todayData.length).toFixed(2)}/${(sumItem.forks_count / todayData.length).toFixed(2)})`,
+              gitItemList.value = getHistoryData([sumItem, ...todayData])
             console.log(gitItemList.value)
           })
       }

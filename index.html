@@ -210,7 +210,7 @@
     <table :class="[ isMobile ? 'table-mobile' : '']">
       <thead>
         <tr>
-          <th>项目名</th>
+          <th>项目名({{gitItemList.length - 1}})</th>
           <th>{{ preDateStr }}</th>
           <th>star</th>
           <th>变化</th>
@@ -271,14 +271,10 @@
       // 对比历史数据
       function getHistoryData(todayDataList) {
         let date = new Date()
-        let todayStr = `${date.getMonth() + 1}/${date.getDate()}`
+        let todayStr = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
         const dataHistoryList = JSON.parse(localStorage.getItem(`dataHistoryList-${account.value}`) || '[]') // 数据历史，只保存今天和昨天的数据
         const projectData = {} // 项目信息，从数组转化为对象
         todayDataList.forEach(element => projectData[element.name] = element)
-        let daySpace = new Date(dataHistoryList[0]?.date).getTime() - new Date(todayStr).getTime()
-        if (daySpace) {
-          daySpace = daySpace / 1000 * 60 * 60 * 24
-        }
 
         let preData = {}
         if (dataHistoryList[0]?.date !== todayStr) { // 今日数据未存储，添加进入数据，删除前天数据
@@ -300,22 +296,21 @@
           }
         }
 
+        let timeSpace = new Date(todayStr).getTime() - new Date(preDateStr.value).getTime()
+        if (timeSpace) {
+          // 去除年份显示
+          preDateStr.value = preDateStr.value.split('/')
+          preDateStr.value.shift()
+          preDateStr.value = preDateStr.value.join('/')
+          preDateStr.value += `(${timeSpace / 1000 / 60 / 60 / 24})`
+        }
+
         todayDataList.forEach(element => {
           element.pre_forks_count = preData[element.name]?.forks_count ?? element.forks_count
           element.forks_count_change = element.forks_count - element.pre_forks_count || '-'
           element.pre_stargazers_count = preData[element.name]?.stargazers_count ?? element.stargazers_count
           element.stargazers_count_change = element.stargazers_count - element.pre_stargazers_count || '-'
         });
-
-        const sumItem = todayDataList[0]
-        if (sumItem.forks_count_change !== '-') {
-          sumItem.forks_count_change += `/${(sumItem.forks_count_change / daySpace).toFixed(2)}`;
-        }
-        if (sumItem.stargazers_count_change !== '-') {
-          sumItem.stargazers_count_change += `/${(sumItem.stargazers_count_change / daySpace).toFixed(2)}`;
-        }
-
-
         localStorage.setItem(`dataHistoryList-${account.value}`, JSON.stringify(dataHistoryList))
 
         return todayDataList
@@ -340,7 +335,7 @@
           })
           .then(todayData => { // 解析后的参数
             let sumItem = {
-              name: `合计`,
+              name: '合计',
               forks_count: 0,
               stargazers_count: 0,
             } // 合计后数据
@@ -350,9 +345,7 @@
               sumItem.forks_count += element.forks_count
               sumItem.stargazers_count += element.stargazers_count
             });
-            // 平均每个项目多少 star，多少 fork
-            sumItem.name = `合计(${todayData.length}/${(sumItem.stargazers_count / todayData.length).toFixed(2)}/${(sumItem.forks_count / todayData.length).toFixed(2)})`,
-              gitItemList.value = getHistoryData([sumItem, ...todayData])
+            gitItemList.value = getHistoryData([sumItem, ...todayData])
             console.log(gitItemList.value)
           })
       }
